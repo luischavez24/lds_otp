@@ -15,7 +15,7 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanState extends State<ScanScreen> {
-  List<TOTPWidget> _codeList = [];
+  List<CodeWidget> _codeList = [];
 
   @override
   initState() {
@@ -40,7 +40,7 @@ class _ScanState extends State<ScanScreen> {
     var codes = await DBProvider.db.getAllCodes();
     setState(() {
       _codeList = codes
-          .map((model) => TOTPWidget.fromBarcode(model.barcode))
+          .map((model) => CodeWidget.fromModel(model))
           .toList();
     });
   }
@@ -50,7 +50,7 @@ class _ScanState extends State<ScanScreen> {
     try {
       var barcode = await BarcodeScanner.scan();
 
-      DBProvider.db.addCode(CodeModel(barcode: barcode));
+      DBProvider.db.addCode(CodeModel.fromBarcode(barcode: barcode));
 
       await _chargeCodesFromStorage();
 
@@ -77,23 +77,25 @@ class _ScanState extends State<ScanScreen> {
   }
 }
 
-class TOTPWidget extends StatefulWidget {
-  final TOTPData totpData;
+class CodeWidget extends StatefulWidget {
+  final CodeModel codeModel;
 
-  TOTPWidget(this.totpData);
+  CodeWidget(this.codeModel);
 
-  TOTPWidget.fromBarcode(String barcode)
-      : totpData = TOTPData.fromBarcode(barcode: barcode);
+  CodeWidget.fromBarcode(String barcode)
+      : codeModel = CodeModel.fromBarcode(barcode: barcode);
+
+  CodeWidget.fromModel(this.codeModel);
 
   @override
-  State createState() => _TOTPState(totpData);
+  State createState() => _CodeState(codeModel);
 }
 
-class _TOTPState extends State<TOTPWidget> {
-  TOTPData _totpData;
+class _CodeState extends State<CodeWidget> {
+  CodeModel _totpData;
   Timer _timer;
 
-  _TOTPState(TOTPData totpData) {
+  _CodeState(CodeModel totpData) {
     _totpData = totpData;
   }
 

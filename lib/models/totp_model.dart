@@ -2,48 +2,62 @@ import 'package:dotp/dotp.dart';
 
 const int _tokenPeriod = 30;
 
-class TOTPData {
+class CodeModel {
   String currentCode;
   String issuer;
   String user;
   String domain;
+  String secret;
 
   TOTP _oneTimePassword;
+  int get remainTime => _tokenPeriod - DateTime.now().second % _tokenPeriod;
+  double get remainTimeAsPercent => remainTime / 30;
+  String toString() => "$user($domain)";
 
-  TOTPData({this.issuer, this.user, this.domain});
+  CodeModel({
+    this.issuer,
+    this.user,
+    this.domain,
+    this.secret
+  }){
+    _initTOTP();
+  }
 
-  TOTPData.fromBarcode({String barcode}) {
+  CodeModel.fromBarcode({ String barcode }) {
+    _initDataWithBarcode(barcode);
+    _initTOTP();
+  }
+
+  _initDataWithBarcode(String barcode) {
     var uri = Uri.parse(barcode);
     var path = uri.path.split(":");
 
     this.domain = path[0] ?? "";
     this.user = path[1] ?? "";
     this.issuer = uri.queryParameters["issuer"];
-    _oneTimePassword = TOTP(uri.queryParameters["secret"]);
+    this.secret = uri.queryParameters["secret"];
+  }
+
+  _initTOTP() {
+    _oneTimePassword = TOTP(secret);
     refreshCode();
   }
 
-  void refreshCode() {
+  refreshCode() {
     currentCode = _oneTimePassword?.now();
   }
 
-  int get remainTime => _tokenPeriod - DateTime.now().second % _tokenPeriod;
-
-  double get remainTimeAsPercent => remainTime / 30;
-
-  String toString() => "$user($domain)";
-}
-
-class CodeModel {
-  String barcode;
-
-  CodeModel({ this.barcode });
-
-  factory CodeModel.fromMap(Map<String, dynamic> json) => new CodeModel(
-    barcode: json["barcode"],
+  factory CodeModel.fromMap(Map<String, dynamic> json) => CodeModel(
+    issuer: json["issuer"],
+    domain:  json["domain"],
+    user:  json["user"],
+    secret: json["secret"]
   );
 
   Map<String, dynamic> toMap() => {
-    "barcode": barcode
+    "issuer": issuer,
+    "domain": domain,
+    "user": user,
+    "secret": secret
   };
 }
