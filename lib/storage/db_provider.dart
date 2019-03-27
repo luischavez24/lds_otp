@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:lds_otp/models/totp_model.dart';
+import 'package:lds_otp/models/code_model.dart';
 
 class DBProvider {
   DBProvider._();
@@ -33,6 +33,14 @@ class DBProvider {
     return await db.insert("Codes", code.toMap());
   }
 
+  deleteCode(String user, String domain) async {
+    final db = await database;
+    return await db.delete(
+        "Codes",
+        where: "user = ? and domain = ?",
+        whereArgs: [user, domain]
+    );
+  }
   Future<List<CodeModel>> getAllCodes() async {
     final db = await database;
     var res = await db.query("Codes");

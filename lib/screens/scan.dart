@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lds_otp/models/totp_model.dart';
+import 'package:lds_otp/models/code_model.dart';
 import 'package:lds_otp/storage/db_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'dart:math';
 
 const int _tokenPeriod = 30;
 
@@ -28,7 +29,30 @@ class _ScanState extends State<ScanScreen> {
     return Scaffold(
       body: ListView.builder(
           itemCount: _codeList.length,
-          itemBuilder: (context, index) => _codeList[index]),
+          itemBuilder: (context, index) {
+            final codeItem = _codeList[index];
+            final codeModel = codeItem.codeModel;
+            return Dismissible(
+              key: Key(codeModel.toString() + Random().nextInt(10000).toString()),
+              child: codeItem,
+              background: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  color: Colors.redAccent,
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.delete, color: Colors.white),
+                      Text("Eliminado", style: TextStyle(color: Colors.white))
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                  )),
+              onDismissed: (DismissDirection direction) {
+                if (direction == DismissDirection.endToStart) {
+                  _deleteCode(codeModel);
+                }
+              },
+            );
+          }),
       floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.deepOrange,
           foregroundColor: Colors.white,
@@ -36,25 +60,47 @@ class _ScanState extends State<ScanScreen> {
           child: Icon(Icons.photo_camera)),
     );
   }
-  Future _chargeCodesFromStorage () async {
-    var codes = await DBProvider.db.getAllCodes();
-    setState(() {
-      _codeList = codes
-          .map((model) => CodeWidget.fromModel(model))
-          .toList();
-    });
+
+  _deleteCode(CodeModel codeModel) {
+    var closeDialog = () {
+      _chargeCodesFromStorage();
+      Navigator.of(context).pop();
+    };
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: Text("Borrar código"),
+              content:
+                  Text("¿Está seguro de eliminar el código para $codeModel?"),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("Si"),
+                  onPressed: () {
+                    DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
+                    closeDialog();
+                  },
+                ),
+                FlatButton(
+                  child: Text("No"),
+                  onPressed: closeDialog,
+                )
+              ],
+        ));
   }
 
+  Future _chargeCodesFromStorage() async {
+    var codes = await DBProvider.db.getAllCodes();
+    setState(() {
+      _codeList = codes.map((model) => CodeWidget.fromModel(model)).toList();
+    });
+  }
 
   Future _scan() async {
     try {
       var barcode = await BarcodeScanner.scan();
-
       DBProvider.db.addCode(CodeModel.fromBarcode(barcode: barcode));
-
       await _chargeCodesFromStorage();
-
-    } on DatabaseException catch(e) {
+    } on DatabaseException catch (e) {
       _showErrorMessage('Hubo un problema al acceder a la base de datos');
       debugPrint(e.toString());
     } on PlatformException catch (e) {
@@ -71,7 +117,7 @@ class _ScanState extends State<ScanScreen> {
     }
   }
 
-  void _showErrorMessage(String message) {
+  _showErrorMessage(String message) {
     final snackBar = SnackBar(content: Text(message));
     Scaffold.of(context).showSnackBar(snackBar);
   }
@@ -92,11 +138,11 @@ class CodeWidget extends StatefulWidget {
 }
 
 class _CodeState extends State<CodeWidget> {
-  CodeModel _totpData;
+  CodeModel _codeModel;
   Timer _timer;
 
   _CodeState(CodeModel totpData) {
-    _totpData = totpData;
+    _codeModel = totpData;
   }
 
   @override
@@ -104,8 +150,8 @@ class _CodeState extends State<CodeWidget> {
     super.initState();
     _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
-        if (_totpData.remainTime == _tokenPeriod) {
-          _totpData.refreshCode();
+        if (_codeModel.remainTime == _tokenPeriod) {
+          _codeModel.refreshCode();
         }
       });
     });
@@ -118,20 +164,18 @@ class _CodeState extends State<CodeWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        leading: Icon(Icons.vpn_key),
-        title: Text(
-          _totpData.currentCode ?? "",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25.0),
+  Widget build(BuildContext context) => ListTile(
+      leading: Icon(Icons.vpn_key),
+      title: Text(
+        _codeModel.currentCode ?? "",
+        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25.0),
+      ),
+      subtitle: Text(_codeModel.toString()),
+      trailing: Theme(
+        data: Theme.of(context).copyWith(accentColor: Colors.deepOrange),
+        child: CircularProgressIndicator(
+          value: _codeModel.remainTimeAsPercent,
+          strokeWidth: 4.5,
         ),
-        subtitle: Text(_totpData.toString()),
-        trailing: Theme(
-          data: Theme.of(context).copyWith(accentColor: Colors.deepOrange),
-          child: CircularProgressIndicator(
-            value: _totpData.remainTimeAsPercent,
-            strokeWidth: 4.5,
-          ),
-        ));
-  }
+      ));
 }
