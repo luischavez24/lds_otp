@@ -42,8 +42,7 @@ class DBProvider {
   _createDatabase(Database db, int version) async {
     var sSQL = StringBuffer();
     sSQL.write(" CREATE TABLE Codes ( ");
-    sSQL.write(" code_id TEXT PRIMARY KEY, ");
-    sSQL.write(" barcode TEXT ");
+    sSQL.write(" barcode TEXT PRIMARY KEY");
     sSQL.write(" ) ");
     await db.execute(sSQL.toString());
   }

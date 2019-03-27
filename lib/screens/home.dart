@@ -30,7 +30,7 @@ class _HomeState extends State<HomeScreen> {
   List<ScreenModel> _createScreens() {
     return [
       ScreenModel(
-          icon: Icon(Icons.lock_outline),
+          icon: Icon(Icons.lock),
           title: "Códigos",
           child: ScanScreen()),
       ScreenModel(

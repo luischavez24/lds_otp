@@ -35,18 +35,15 @@ class TOTPData {
 }
 
 class CodeModel {
-  String codeId;
   String barcode;
 
-  CodeModel({ this.codeId, this.barcode });
+  CodeModel({ this.barcode });
 
   factory CodeModel.fromMap(Map<String, dynamic> json) => new CodeModel(
-    codeId: json["code_id"],
     barcode: json["barcode"],
   );
 
   Map<String, dynamic> toMap() => {
-    "code_id": codeId,
     "barcode": barcode
   };
 }

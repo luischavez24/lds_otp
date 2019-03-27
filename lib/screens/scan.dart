@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lds_otp/models/totp_model.dart';
 import 'package:lds_otp/storage/db_provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 const int _tokenPeriod = 30;
 
@@ -19,6 +20,7 @@ class _ScanState extends State<ScanScreen> {
   @override
   initState() {
     super.initState();
+    _chargeCodesFromStorage();
   }
 
   @override
@@ -28,28 +30,33 @@ class _ScanState extends State<ScanScreen> {
           itemCount: _codeList.length,
           itemBuilder: (context, index) => _codeList[index]),
       floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: Colors.deepOrange,
           foregroundColor: Colors.white,
           onPressed: _scan,
           child: Icon(Icons.photo_camera)),
     );
   }
+  Future _chargeCodesFromStorage () async {
+    var codes = await DBProvider.db.getAllCodes();
+    setState(() {
+      _codeList = codes
+          .map((model) => TOTPWidget.fromBarcode(model.barcode))
+          .toList();
+    });
+  }
+
 
   Future _scan() async {
     try {
       var barcode = await BarcodeScanner.scan();
 
-      DBProvider.db.addCode(
-          CodeModel(codeId: barcode.hashCode.toString(), barcode: barcode));
+      DBProvider.db.addCode(CodeModel(barcode: barcode));
 
-      var codes = await DBProvider.db.getAllCodes();
+      await _chargeCodesFromStorage();
 
-      setState(() {
-        // _codeList.add(TOTPWidget.fromBarcode(barcode));
-        _codeList = codes
-            .map((model) => TOTPWidget.fromBarcode(model.barcode))
-            .toList();
-      });
+    } on DatabaseException catch(e) {
+      _showErrorMessage('Hubo un problema al acceder a la base de datos');
+      debugPrint(e.toString());
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
         _showErrorMessage('The user did not grant the camera permission!');
@@ -118,7 +125,7 @@ class _TOTPState extends State<TOTPWidget> {
         ),
         subtitle: Text(_totpData.toString()),
         trailing: Theme(
-          data: Theme.of(context).copyWith(accentColor: Colors.deepPurple),
+          data: Theme.of(context).copyWith(accentColor: Colors.deepOrange),
           child: CircularProgressIndicator(
             value: _totpData.remainTimeAsPercent,
             strokeWidth: 4.5,
