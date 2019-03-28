@@ -1,7 +1,5 @@
 import 'package:dotp/dotp.dart';
-import 'package:flutter/material.dart';
-
-const int _tokenPeriod = 30;
+import 'package:lds_otp/utils/constants.dart';
 
 class CodeModel {
   String currentCode;
@@ -9,11 +7,15 @@ class CodeModel {
   String user;
   String domain;
   String secret;
-
   TOTP _oneTimePassword;
-  int get remainTime => _tokenPeriod - DateTime.now().second % _tokenPeriod;
-  double get remainTimeAsPercent => remainTime / 30;
+
+  // Computated
+  int get remainTime => TOKEN_PERIOD - DateTime.now().second % TOKEN_PERIOD;
+
+  double get remainTimeAsPercent => remainTime / TOKEN_PERIOD;
+
   String toString() => "$user($domain)";
+
   CodeModel({
     this.issuer,
     this.user,

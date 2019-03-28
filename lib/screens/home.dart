@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import './scan.dart';
-import 'package:lds_otp/utils/screen_model.dart';
+import 'package:lds_otp/screens/scan.dart';
+import 'package:lds_otp/models/screen_model.dart';
+import 'package:lds_otp/utils/constants.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,43 +16,44 @@ class _HomeState extends State<HomeScreen> {
     _appScreens = _createScreens();
   }
 
-  BottomNavigationBar get _bottomNavigationBar => BottomNavigationBar(
-    currentIndex: _currentIndex,
-    items: (_appScreens ?? [])
-        .map((screen) => screen.bottomNavigationButton)
-        .toList(),
-    onTap: (screenIndex) {
-      setState(() {
-        _currentIndex = screenIndex;
-      });
-    },
-  );
-
   List<ScreenModel> _createScreens() {
     return [
       ScreenModel(
-          icon: Icon(Icons.fiber_pin),
+          icon: Icon(Icons.security),
           title: "Códigos",
-          child: ScanScreen()),
+          child: ScanScreen()
+      ),
       ScreenModel(
-        icon: Icon(Icons.settings),
-        title: "Configuración",
-        child: Container()
+          icon: Icon(Icons.settings),
+          title: "Configuración",
+          child: Container()
       )
     ];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    var currentScreen = _appScreens[_currentIndex];
+  BottomNavigationBar get _bottomNavigationBar => BottomNavigationBar(
+        currentIndex: _currentIndex,
+        items: (_appScreens ?? [])
+            .map((screen) => screen.bottomNavigationButton)
+            .toList(),
+        onTap: (screenIndex) {
+          setState(() {
+            _currentIndex = screenIndex;
+          });
+        },
+      );
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: currentScreen.icon,
-        title: Text(currentScreen.title),
-      ),
-      body: currentScreen.child,
-      bottomNavigationBar: _bottomNavigationBar,
-    );
-  }
+  AppBar get _appBar => AppBar(
+        leading: _appScreens[_currentIndex].icon,
+        title: Text(_appScreens[_currentIndex].title),
+      );
+
+  Widget get _body => _appScreens[_currentIndex].child;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: _appBar,
+        body: _body,
+        bottomNavigationBar: _bottomNavigationBar,
+      );
 }

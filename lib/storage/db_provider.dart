@@ -41,6 +41,7 @@ class DBProvider {
         whereArgs: [user, domain]
     );
   }
+
   Future<List<CodeModel>> getAllCodes() async {
     final db = await database;
     var res = await db.query("Codes");
