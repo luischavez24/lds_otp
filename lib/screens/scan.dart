@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lds_otp/models/code_model.dart';
 import 'package:lds_otp/storage/db_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'dart:math';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 const int _tokenPeriod = 30;
 
@@ -33,9 +33,9 @@ class _ScanState extends State<ScanScreen> {
             final codeItem = _codeList[index];
             final codeModel = codeItem.codeModel;
             return Dismissible(
-              key: Key(codeModel.toString() + Random().nextInt(10000).toString()),
+              key: Key(codeModel.toString()),
               child: codeItem,
-              background: Container(
+              secondaryBackground: Container(
                   padding: EdgeInsets.symmetric(horizontal: 20.0),
                   color: Colors.redAccent,
                   child: Row(
@@ -46,6 +46,13 @@ class _ScanState extends State<ScanScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
                   )),
+              background: Container(),
+              confirmDismiss: (DismissDirection direction) async {
+                if (direction == DismissDirection.endToStart) {
+                  return await _showConfirmDialog(codeModel);
+                }
+                return false;
+              },
               onDismissed: (DismissDirection direction) {
                 if (direction == DismissDirection.endToStart) {
                   _deleteCode(codeModel);
@@ -57,35 +64,28 @@ class _ScanState extends State<ScanScreen> {
           backgroundColor: Colors.deepOrange,
           foregroundColor: Colors.white,
           onPressed: _scan,
-          child: Icon(Icons.photo_camera)),
+          child: Icon(FontAwesomeIcons.qrcode)),
     );
   }
 
-  _deleteCode(CodeModel codeModel) {
-    var closeDialog = () {
-      _chargeCodesFromStorage();
-      Navigator.of(context).pop();
-    };
-    showDialog(
+  Future<bool> _showConfirmDialog(CodeModel codeModel) async {
+    var isConfirm = await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-              title: Text("Borrar código"),
-              content:
-                  Text("¿Está seguro de eliminar el código para $codeModel?"),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("Si"),
-                  onPressed: () {
-                    DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
-                    closeDialog();
-                  },
-                ),
-                FlatButton(
-                  child: Text("No"),
-                  onPressed: closeDialog,
-                )
-              ],
-        ));
+          title: Text("Borrar código"),
+          content:Text("¿Está seguro de eliminar el código para $codeModel?"),
+          actions: <Widget>[
+            FlatButton(child: Text("Si"), onPressed: () => Navigator.pop(context, true)),
+            FlatButton(child: Text("No"), onPressed: () => Navigator.pop(context, false)),
+          ],
+        )
+    );
+    return isConfirm ?? false;
+  }
+
+  _deleteCode(CodeModel codeModel) {
+    DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
+    _chargeCodesFromStorage();
   }
 
   Future _chargeCodesFromStorage() async {
@@ -167,7 +167,7 @@ class _CodeState extends State<CodeWidget> {
   Widget build(BuildContext context) => ListTile(
       leading: Icon(Icons.vpn_key),
       title: Text(
-        _codeModel.currentCode ?? "",
+        _displayCode(_codeModel.currentCode),
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25.0),
       ),
       subtitle: Text(_codeModel.toString()),
@@ -177,5 +177,7 @@ class _CodeState extends State<CodeWidget> {
           value: _codeModel.remainTimeAsPercent,
           strokeWidth: 4.5,
         ),
-      ));
+      )
+  );
+  String _displayCode(String code) => "${code?.substring(0,3)} ${code?.substring(3)}";
 }

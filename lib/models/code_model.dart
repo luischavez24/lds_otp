@@ -1,4 +1,5 @@
 import 'package:dotp/dotp.dart';
+import 'package:flutter/material.dart';
 
 const int _tokenPeriod = 30;
 
@@ -13,7 +14,6 @@ class CodeModel {
   int get remainTime => _tokenPeriod - DateTime.now().second % _tokenPeriod;
   double get remainTimeAsPercent => remainTime / 30;
   String toString() => "$user($domain)";
-
   CodeModel({
     this.issuer,
     this.user,
