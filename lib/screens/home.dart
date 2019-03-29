@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lds_otp/screens/scan.dart';
 import 'package:lds_otp/models/screen_model.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -45,6 +46,15 @@ class _HomeState extends State<HomeScreen> {
   AppBar get _appBar => AppBar(
         leading: _appScreens[_currentIndex].icon,
         title: Text(_appScreens[_currentIndex].title),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
+              },
+              icon: Icon(FontAwesomeIcons.signOutAlt)
+          )
+        ],
       );
 
   Widget get _body => _appScreens[_currentIndex].child;
@@ -53,6 +63,6 @@ class _HomeState extends State<HomeScreen> {
   Widget build(BuildContext context) => Scaffold(
         appBar: _appBar,
         body: _body,
-        bottomNavigationBar: _bottomNavigationBar,
+        // bottomNavigationBar: _bottomNavigationBar,
       );
 }

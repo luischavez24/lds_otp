@@ -1,13 +1,19 @@
 import 'dart:async';
+
 import 'package:barcode_scan/barcode_scan.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lds_otp/models/code_model.dart';
-import 'package:lds_otp/storage/db_provider.dart';
+
 import 'package:sqflite/sqflite.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:lds_otp/widgets/code_widget.dart';
 import 'package:lds_otp/utils/constants.dart';
+import 'package:lds_otp/utils/messages.dart';
+import 'package:lds_otp/models/code_model.dart';
+import 'package:lds_otp/storage/db_provider.dart';
 
 class ScanScreen extends StatefulWidget {
   @override
@@ -40,7 +46,7 @@ class _ScanState extends State<ScanScreen> {
                   child: Row(
                     children: <Widget>[
                       Icon(Icons.delete, color: Colors.white),
-                      Text("Eliminado", style: TextStyle(color: Colors.white))
+                      Text("Eliminando", style: TextStyle(color: Colors.white))
                     ],
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -63,7 +69,8 @@ class _ScanState extends State<ScanScreen> {
           backgroundColor: SECONDARY_COLOR,
           foregroundColor: Colors.white,
           onPressed: _scan,
-          child: Icon(FontAwesomeIcons.qrcode)),
+          child: Icon(FontAwesomeIcons.qrcode)
+      ),
     );
   }
 
@@ -95,26 +102,22 @@ class _ScanState extends State<ScanScreen> {
       DBProvider.db.addCode(CodeModel.fromBarcode(barcode: barcode));
       await _chargeCodesFromStorage();
     } on DatabaseException catch (e) {
-      _showErrorMessage('Hubo un problema al acceder a la base de datos ($e).');
+      showErrorMessage(context, 'Hubo un problema al acceder a la base de datos ($e).');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
-        _showErrorMessage('La aplicación no tiene permisos para usar la cámara');
+        showErrorMessage(context, 'La aplicación no tiene permisos para usar la cámara');
       } else {
-        _showErrorMessage('Error desconocido: $e');
+        showErrorMessage(context, 'Error desconocido: $e');
       }
     } on FormatException {
-      _showErrorMessage('No se escaneó ningún código');
+      showErrorMessage(context, 'No se escaneó ningún código');
     } catch (e) {
-      _showErrorMessage('Unknown error: $e');
+      showErrorMessage(context, 'Unknown error: $e');
     }
   }
 
   _deleteCode(CodeModel codeModel) {
     DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
     _chargeCodesFromStorage();
-  }
-  _showErrorMessage(String message) {
-    final snackBar = SnackBar(content: Text(message));
-    Scaffold.of(context).showSnackBar(snackBar);
   }
 }
