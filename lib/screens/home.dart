@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lds_otp/screens/scan.dart';
 import 'package:lds_otp/models/screen_model.dart';
-import 'package:lds_otp/utils/constants.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
