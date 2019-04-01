@@ -38,6 +38,7 @@ class _ScanState extends State<ScanScreen> {
             final codeModel = codeItem.codeModel;
             return Dismissible(
               key: Key(codeModel.toString()),
+              direction: DismissDirection.endToStart,
               child: codeItem,
               secondaryBackground: Container(
                   padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -52,22 +53,18 @@ class _ScanState extends State<ScanScreen> {
                   )),
               background: Container(),
               confirmDismiss: (direction) async {
-                if (direction == DismissDirection.endToStart) {
-                  return await _showConfirmDialog(codeModel);
-                }
-                return false;
+                return await _showConfirmDialog(codeModel);
               },
-              onDismissed: (direction) {
-                if (direction == DismissDirection.endToStart) {
-                  _deleteCode(codeModel);
-                }
+              onDismissed: (direction) async {
+                await _deleteCode(codeModel);
+                showMessage(context, "Codigo eliminado", type: MessageType.SUCCESS);
               },
             );
           }),
       floatingActionButton: FloatingActionButton(
           onPressed: _scan,
           child: Icon(FontAwesomeIcons.qrcode)
-      ),
+      )
     );
   }
 
@@ -99,22 +96,22 @@ class _ScanState extends State<ScanScreen> {
       DBProvider.db.addCode(CodeModel.fromBarcode(barcode: barcode));
       await _chargeCodesFromStorage();
     } on DatabaseException catch (e) {
-      showErrorMessage(context, 'Hubo un problema al acceder a la base de datos ($e).');
+      showMessage(context, 'Hubo un problema al acceder a la base de datos ($e).');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
-        showErrorMessage(context, 'La aplicación no tiene permisos para usar la cámara');
+        showMessage(context, 'La aplicación no tiene permisos para usar la cámara');
       } else {
-        showErrorMessage(context, 'Error desconocido: $e');
+        showMessage(context, 'Error desconocido: $e');
       }
     } on FormatException {
-      showErrorMessage(context, 'No se escaneó ningún código');
+      showMessage(context, 'No se escaneó ningún código');
     } catch (e) {
-      showErrorMessage(context, 'Unknown error: $e');
+      showMessage(context, 'Unknown error: $e');
     }
   }
 
-  _deleteCode(CodeModel codeModel) {
-    DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
+  Future _deleteCode(CodeModel codeModel) async {
+    await DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
     _chargeCodesFromStorage();
   }
 }

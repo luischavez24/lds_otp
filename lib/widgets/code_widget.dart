@@ -55,12 +55,9 @@ class _CodeState extends State<CodeWidget> {
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 25.0),
       ),
       subtitle: Text(_codeModel.toString()),
-      trailing: Theme(
-        data: Theme.of(context).copyWith(accentColor: Colors.deepOrange),
-        child: CircularProgressIndicator(
-          value: _codeModel.remainTimeAsPercent,
-          strokeWidth: 4.5,
-        ),
+      trailing:  CircularProgressIndicator(
+        value: _codeModel.remainTimeAsPercent,
+        strokeWidth: 4.5,
       )
   );
   String _displayCode(String code) => "${code?.substring(0,3)} ${code?.substring(3)}";

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lds_otp/screens/scan.dart';
+import 'package:lds_otp/screens/config.dart';
 import 'package:lds_otp/models/screen_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -26,7 +27,7 @@ class _HomeState extends State<HomeScreen> {
       ScreenModel(
           icon: Icon(Icons.settings),
           title: "Configuración",
-          child: Container()
+          child: ConfigScreen()
       )
     ];
   }
@@ -53,14 +54,15 @@ class _HomeState extends State<HomeScreen> {
         ),
         actions: <Widget>[
           IconButton(
-              onPressed: () {
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
-              },
+              onPressed: _logoff ,
               icon: Icon(FontAwesomeIcons.signOutAlt)
           )
         ],
       );
+
+  Future _logoff () async {
+    await Navigator.of(context).pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
+  }
 
   Widget get _body => _appScreens[_currentIndex].child;
 
@@ -68,6 +70,6 @@ class _HomeState extends State<HomeScreen> {
   Widget build(BuildContext context) => Scaffold(
         appBar: _appBar,
         body: _body,
-        // bottomNavigationBar: _bottomNavigationBar,
+        bottomNavigationBar: _bottomNavigationBar,
       );
 }
