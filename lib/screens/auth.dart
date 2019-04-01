@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:local_auth/local_auth.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dbcrypt/dbcrypt.dart';
 
 import 'package:lds_otp/utils/messages.dart';
 import 'package:lds_otp/utils/theme.dart';
+import 'package:lds_otp/services/auth_services.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -16,8 +18,8 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthState extends State<AuthScreen> {
   final auth = new LocalAuthentication();
-  final _crypt = DBCrypt();
   final _formKey = GlobalKey<FormState>();
+
   bool _usesFingerprint = false;
   String _data = "";
 
@@ -56,10 +58,7 @@ class _AuthState extends State<AuthScreen> {
                   ButtonBar(
                     children: <Widget>[
                       RaisedButton.icon(
-                          onPressed: () {
-                            _formKey.currentState.save();
-                            _auth(context, AuthType.PIN);
-                          },
+                          onPressed: () => _pinAuth(context),
                           color: AppColors.accentColor,
                           textColor: AppColors.textColor,
                           icon: Icon(Icons.lock),
@@ -70,7 +69,7 @@ class _AuthState extends State<AuthScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.fingerprint),
-                        onPressed: _usesFingerprint ? () => _auth(context, AuthType.BIOMETRIC) : null,
+                        onPressed: _usesFingerprint ? () => _biometricAuth(context) : null,
                         color: AppColors.primaryColor,
                       )
                     ],
@@ -83,49 +82,29 @@ class _AuthState extends State<AuthScreen> {
     )
   );
 
-  Future _auth (BuildContext context, AuthType authType) async {
-    var isAuthenticated = false;
+  Future _pinAuth(BuildContext context) async {
+    _formKey.currentState.save();
+    final authService = AuthService.getServiceByAuthType(AuthType.PIN);
+    _postAuthenticationAction(context, await authService.authenticate(pin: _data));
+  }
 
-    if(authType == AuthType.PIN) {
-      isAuthenticated = await _pinAuth();
-    } else if (authType == AuthType.BIOMETRIC) {
-      isAuthenticated = await _biometricAuth();
-    } else {
-      throw Exception("Tipo de autenticación no soportado");
+  Future _biometricAuth(BuildContext context,) async {
+    final authService = AuthService.getServiceByAuthType(AuthType.BIOMETRIC);
+    try {
+      var isAuthenticated = await authService.authenticate();
+      if(!mounted) return;
+      _postAuthenticationAction(context, isAuthenticated);
+    } on PlatformException catch (e) {
+      showMessage(context, e.message);
     }
+  }
 
+  void _postAuthenticationAction(BuildContext context, bool isAuthenticated) {
     if(isAuthenticated) {
       Navigator.pushReplacementNamed (context, '/');
     } else {
       showMessage(context, "No se pudo realizar la autenticación, intentelo nuevamente");
     }
-  }
-
-  Future<bool> _pinAuth() async {
-    if(_formKey.currentState.validate()) {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      var defaultPin = _crypt.hashpw("1234", DBCrypt().gensalt());
-      var savedPin = prefs.getString("pin");
-      return  _crypt.checkpw(_data, savedPin ?? defaultPin);
-    }
-    return false;
-  }
-
-  Future<bool> _biometricAuth() async {
-    var isAuthenticated = false;
-
-    try {
-      isAuthenticated = await auth.authenticateWithBiometrics(
-          localizedReason: 'Coloca tu huella en el sensor',
-          useErrorDialogs: true,
-          stickyAuth: false);
-    } on PlatformException catch (e) {
-      showMessage(context, e.message);
-    }
-
-    if (!mounted) return false;
-
-    return isAuthenticated;
   }
 
   Future _chargeUserPrefs() async {
@@ -143,9 +122,4 @@ class _AuthState extends State<AuthScreen> {
     ],
   );
 
-}
-
-enum AuthType {
-  BIOMETRIC,
-  PIN
 }
