@@ -45,7 +45,12 @@ class _HomeState extends State<HomeScreen> {
 
   AppBar get _appBar => AppBar(
         leading: _appScreens[_currentIndex].icon,
-        title: Text(_appScreens[_currentIndex].title),
+        title: Text(
+          _appScreens[_currentIndex].title,
+            style: TextStyle(
+            fontWeight: FontWeight.w600
+          ),
+        ),
         actions: <Widget>[
           IconButton(
               onPressed: () {

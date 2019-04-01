@@ -18,14 +18,16 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           fontFamily: "Montserrat",
           primarySwatch: AppColors.primaryColor,
+          secondaryHeaderColor: AppColors.secondaryColor,
           buttonTheme: ButtonThemeData(
             buttonColor: AppColors.secondaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0)
             ),
-            textTheme: ButtonTextTheme.normal
+            splashColor: AppColors.secondaryColor,
+            highlightColor: AppColors.secondaryColor,
           )
-        )
+        ),
     );
   }
 }
