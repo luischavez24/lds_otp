@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lds_otp/screens/home.dart';
 import 'package:lds_otp/screens/auth.dart';
-import 'package:lds_otp/utils/constants.dart';
-
+import 'package:lds_otp/utils/theme.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -17,8 +16,15 @@ class MyApp extends StatelessWidget {
           '/auth': (context) => AuthScreen()
         },
         theme: ThemeData(
-          fontFamily: "Open Sans",
-          primarySwatch: PRIMARY_COLOR
+          fontFamily: "Montserrat",
+          primarySwatch: AppColors.primaryColor,
+          buttonTheme: ButtonThemeData(
+            buttonColor: AppColors.secondaryColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0)
+            ),
+            textTheme: ButtonTextTheme.normal
+          )
         )
     );
   }

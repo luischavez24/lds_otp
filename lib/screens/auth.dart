@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:lds_otp/utils/constants.dart';
 import 'package:lds_otp/utils/messages.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -28,12 +27,11 @@ class _AuthState extends State<AuthScreen> {
             Text(
               "Autenticador de Luz del Sur",
               style: TextStyle(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.w700
+                fontSize: 30.0,
+                fontWeight: FontWeight.w700,
               ),
             ),
             RaisedButton(
-              color: SECONDARY_COLOR,
               textColor: Colors.white,
               elevation: 3.0,
               child: Container(

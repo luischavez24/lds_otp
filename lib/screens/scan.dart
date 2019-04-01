@@ -10,7 +10,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:lds_otp/widgets/code_widget.dart';
-import 'package:lds_otp/utils/constants.dart';
 import 'package:lds_otp/utils/messages.dart';
 import 'package:lds_otp/models/code_model.dart';
 import 'package:lds_otp/storage/db_provider.dart';
@@ -66,8 +65,6 @@ class _ScanState extends State<ScanScreen> {
             );
           }),
       floatingActionButton: FloatingActionButton(
-          backgroundColor: SECONDARY_COLOR,
-          foregroundColor: Colors.white,
           onPressed: _scan,
           child: Icon(FontAwesomeIcons.qrcode)
       ),

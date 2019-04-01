@@ -30,7 +30,6 @@
             </intent-filter>
 
         </activity>
-        <activity android:name="com.apptreesoftware.barcodescan.BarcodeScannerActivity"/>
     </application>
 
     <uses-permission android:name="android.permission.CAMERA" />

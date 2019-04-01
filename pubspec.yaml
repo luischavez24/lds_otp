@@ -21,7 +21,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^0.1.2
   font_awesome_flutter: ^8.4.0
-  barcode_scan: ^0.0.3
+  barcode_scan: ^1.0.0
   dotp: ^1.0.2
   sqflite: any
   path_provider: any
@@ -73,6 +73,14 @@ flutter:
        - asset: fonts/OpenSans-Bold.ttf
          weight: 700
          style: italic
+   - family: Montserrat
+     fonts:
+     - asset: fonts/Montserrat-Regular.ttf
+     - asset: fonts/Montserrat-Italic.ttf
+     - asset: fonts/Montserrat-Bold.ttf
+     - asset: fonts/Montserrat-SemiBold.ttf
+       weight: 700
+       style: italic
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.io/custom-fonts/#from-packages
