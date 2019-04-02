@@ -16,49 +16,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => HomeScreen(),
           '/auth': (context) => AuthScreen()
         },
-        theme: _buildTheme()
-    );
-  }
-
-  ThemeData _buildTheme () {
-    final ThemeData base= ThemeData.light();
-    return base.copyWith(
-        primaryColor: AppColors.primaryColor,
-        accentColor: AppColors.accentColor,
-        buttonColor: AppColors.accentColor,
-        scaffoldBackgroundColor: Colors.white,
-        cardColor: Colors.white,
-        textSelectionColor: AppColors.primaryColor,
-        errorColor: Colors.redAccent,
-        textTheme: _buildAppTextTheme(base.textTheme, Colors.black),
-        primaryTextTheme: _buildAppTextTheme(base.primaryTextTheme, AppColors.textColor),
-        accentTextTheme: _buildAppTextTheme(base.accentTextTheme,  AppColors.textColor),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.elliptical(10, 10)),
-            gapPadding: 10.0
-          )
-        ),
-    );
-  }
-
-  TextTheme _buildAppTextTheme(TextTheme base, Color textColor) {
-    return base.copyWith(
-      headline: base.headline.copyWith(
-        fontWeight: FontWeight.w900
-      ),
-      title: base.title.copyWith(
-        fontSize: 18.0,
-        fontWeight: FontWeight.w500
-      ),
-      caption: base.title.copyWith(
-        fontWeight: FontWeight.w500,
-        fontSize: 14.0
-      )
-    ).apply(
-      fontFamily: AppFonts.cabin,
-      displayColor: textColor,
-      bodyColor: textColor
+        theme: buildLightTheme()
     );
   }
 }

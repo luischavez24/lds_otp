@@ -30,10 +30,12 @@ class _AuthState extends State<AuthScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Builder(
-      builder:(context) => Container(
-          child: SafeArea(
+  Widget build(BuildContext context) {
+    return Theme(
+      data: buildDarkTheme(),
+      child: Scaffold(
+        body: Builder(builder: (context) =>
+            SafeArea(
             child: Form(
               key: _formKey,
               child: ListView(
@@ -41,7 +43,7 @@ class _AuthState extends State<AuthScreen> {
                 children: <Widget>[
                   SizedBox(height: 80.0),
                   _icon,
-                  SizedBox(height: 80.0),
+                  SizedBox(height: 50.0),
                   TextFormField(
                     keyboardType: TextInputType.numberWithOptions(
                         signed: false,
@@ -59,29 +61,30 @@ class _AuthState extends State<AuthScreen> {
                   ButtonBar(
                     children: <Widget>[
                       RaisedButton.icon(
-                          onPressed: () => _pinAuth(context),
-                          color: AppColors.accentColor,
-                          textColor: AppColors.textColor,
-                          icon: Icon(Icons.lock),
-                          label: Text("Acceder"),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0)
-                          ),
+                        onPressed: () => _pinAuth(context),
+                        color: AppColors.accentColor,
+                        textColor: AppColors.textColor,
+                        icon: Icon(Icons.lock),
+                        label: Text("ACCEDER"),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0)
+                        ),
                       ),
                       IconButton(
                         icon: Icon(Icons.fingerprint),
                         onPressed: _usesFingerprint ? () => _biometricAuth(context) : null,
-                        color: AppColors.primaryColor,
+                        color: AppColors.accentColor,
                       )
                     ],
                   )
                 ],
               ),
             ),
-          ),
+          )
+        )
       )
-    )
-  );
+    );
+  }
 
   String _validatePINField (value) {
     if(value.length > 4) {
@@ -126,12 +129,13 @@ class _AuthState extends State<AuthScreen> {
 
   Widget get _icon => Column(
     children: <Widget>[
-      Image.asset('assets/images/logo.png', height: 80.0),
+      Image.asset('assets/images/logo.png',
+        height: 160.0
+      ),
       SizedBox(height: 20.0),
       Text("Autenticador",
           style: TextStyle(
-              fontSize: 20.0,
-              color: AppColors.primaryColor
+              fontSize: 20.0
           )
       )
     ],

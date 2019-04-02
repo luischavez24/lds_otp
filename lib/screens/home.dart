@@ -41,7 +41,7 @@ class _HomeState extends State<HomeScreen> {
           setState(() {
             _currentIndex = screenIndex;
           });
-        },
+        }
       );
 
   AppBar get _appBar => AppBar(
@@ -70,6 +70,6 @@ class _HomeState extends State<HomeScreen> {
   Widget build(BuildContext context) => Scaffold(
         appBar: _appBar,
         body: _body,
-        bottomNavigationBar: _bottomNavigationBar,
+        bottomNavigationBar: _bottomNavigationBar
       );
 }

@@ -28,6 +28,7 @@ dependencies:
   local_auth: ^0.4.0+1
   shared_preferences: ^0.5.1+2
   dbcrypt: ^1.0.0
+  shimmer: ^1.0.0
 
 dev_dependencies:
   flutter_test:
