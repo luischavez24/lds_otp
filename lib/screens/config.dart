@@ -9,45 +9,43 @@ class ConfigScreen extends StatefulWidget {
 }
 
 class _ConfigState extends State<ConfigScreen> {
-  final DBCrypt _crypt = DBCrypt();
-
-  bool _usesFingerprint = false;
-  @override
-  void initState() {
-    super.initState();
-    _chargeUserPrefs();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: ListView(
-        children: <Widget>[
-          ListTile(
-            title: Text("Cambiar PIN de acceso"),
-            onTap: _savePin,
-          ),
-          SwitchListTile(
-            title: Text("¿Usar huella dactilar?"),
-            value: _usesFingerprint,
-            onChanged: _changeFingerprintUserPref,
-            activeColor: AppColors.primaryColor,
-          )
-        ],
-      ),
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return Text("Cargando preferencias...");
+          default:
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            return Container(
+              child: ListView(
+                children: <Widget>[
+                  ListTile(
+                    title: Text("Cambiar PIN de acceso"),
+                    onTap: _savePin,
+                  ),
+                  SwitchListTile(
+                    title: Text("¿Usar huella dactilar?"),
+                    value: snapshot.data.getBool("uses_fingerprint") ?? false,
+                    onChanged: _changeFingerprintUserPref,
+                    activeColor: AppColors.primaryColor,
+                  )
+                ],
+              ),
+            );
+        }
+      },
     );
   }
 
   Future _changeFingerprintUserPref(bool isUsingFingerprint) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool("uses_fingerprint", isUsingFingerprint);
-  }
-
-  Future _chargeUserPrefs() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _usesFingerprint = prefs.getBool("uses_fingerprint") ?? false;
-    });
   }
 
   Future _savePin() async {

@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         fontSize: 14.0
       )
     ).apply(
-      fontFamily: AppFonts.openSans,
+      fontFamily: AppFonts.cabin,
       displayColor: textColor,
       bodyColor: textColor
     );

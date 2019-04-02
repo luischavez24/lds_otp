@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppFonts {
-  static const String monserrat = "Montserrat";
   static const String openSans = "Open Sans";
+  static const String cabin = "Cabin";
 }
 
 class AppColors {

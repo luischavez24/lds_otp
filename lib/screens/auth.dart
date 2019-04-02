@@ -52,6 +52,7 @@ class _AuthState extends State<AuthScreen> {
                         filled: true
                     ),
                     obscureText: true,
+                    validator: _validatePINField,
                     onSaved: (value) { _data = value; },
                   ),
                   SizedBox(height: 60.0),
@@ -82,10 +83,19 @@ class _AuthState extends State<AuthScreen> {
     )
   );
 
+  String _validatePINField (value) {
+    if(value.length > 4) {
+      return "El PIN debe ser de 4 dígitos";
+    }
+    return null;
+  }
+  
   Future _pinAuth(BuildContext context) async {
     _formKey.currentState.save();
-    final authService = AuthService.getServiceByAuthType(AuthType.PIN);
-    _postAuthenticationAction(context, await authService.authenticate(pin: _data));
+    if(_formKey.currentState.validate()) {
+      final authService = AuthService.getServiceByAuthType(AuthType.PIN);
+      _postAuthenticationAction(context, await authService.authenticate(pin: _data));
+    }
   }
 
   Future _biometricAuth(BuildContext context,) async {
@@ -118,7 +128,12 @@ class _AuthState extends State<AuthScreen> {
     children: <Widget>[
       Image.asset('assets/images/logo.png', height: 80.0),
       SizedBox(height: 20.0),
-      Text("Autenticador", style: TextStyle(fontSize: 20.0))
+      Text("Autenticador",
+          style: TextStyle(
+              fontSize: 20.0,
+              color: AppColors.primaryColor
+          )
+      )
     ],
   );
 
