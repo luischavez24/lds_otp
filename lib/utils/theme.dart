@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppFonts {
-  static const String openSans = "Open Sans";
-  static const String cabin = "Cabin";
+  static const String googleSans = "Google Sans";
 }
 
 class AppColors {
@@ -113,7 +112,7 @@ TextTheme _buildAppTextTheme(TextTheme base, { Color bodyColor,  Color displayCo
           fontSize: 14.0
       )
   ).apply(
-      fontFamily: AppFonts.openSans,
+      fontFamily: AppFonts.googleSans,
       displayColor: displayColor ?? bodyColor,
       bodyColor: bodyColor
   );
