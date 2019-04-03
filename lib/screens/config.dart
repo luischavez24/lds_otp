@@ -26,7 +26,7 @@ class _ConfigState extends State<ConfigScreen> {
             title: Text("¿Usar huella dactilar?"),
             value: snapshot.data?.getBool("uses_fingerprint") ?? false,
             onChanged: _changeFingerprintUserPref,
-            activeColor: AppColors.primaryColor,
+            activeColor: AppColors.accentColor,
           )
         ];
 
