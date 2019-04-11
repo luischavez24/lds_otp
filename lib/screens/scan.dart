@@ -9,6 +9,8 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:lds_otp/widgets/code_widget.dart';
 import 'package:lds_otp/utils/messages.dart';
 import 'package:lds_otp/models/code_model.dart';
@@ -31,36 +33,40 @@ class _ScanState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-          itemCount: _codeList.length,
-          itemBuilder: (context, index) {
-            final codeItem = _codeList[index];
-            final codeModel = codeItem.codeModel;
-            return Dismissible(
-              key: Key(codeModel.toString()),
-              direction: DismissDirection.endToStart,
-              child: codeItem,
-              secondaryBackground: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  color: Colors.redAccent,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.delete, color: Colors.white),
-                      Text("Eliminando", style: TextStyle(color: Colors.white))
-                    ],
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                  )),
-              background: Container(),
-              confirmDismiss: (direction) async {
-                return await _showConfirmDialog(codeModel);
-              },
-              onDismissed: (direction) async {
-                await _deleteCode(codeModel);
-                showMessage(context, "Codigo eliminado", type: MessageType.SUCCESS);
-              },
-            );
-          }),
+      body: BlocBuilder(
+        builder: (context, snapshot) {
+          return ListView.builder(
+              itemCount: _codeList.length,
+              itemBuilder: (context, index) {
+                final codeItem = _codeList[index];
+                final codeModel = codeItem.codeModel;
+                return Dismissible(
+                  key: Key(codeModel.toString()),
+                  direction: DismissDirection.endToStart,
+                  child: codeItem,
+                  secondaryBackground: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      color: Colors.redAccent,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.delete, color: Colors.white),
+                          Text("Eliminando", style: TextStyle(color: Colors.white))
+                        ],
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                      )),
+                  background: Container(),
+                  confirmDismiss: (direction) async {
+                    return await _showConfirmDialog(codeModel);
+                  },
+                  onDismissed: (direction) async {
+                    await _deleteCode(codeModel);
+                    showMessage(context, "Codigo eliminado", type: MessageType.SUCCESS);
+                  },
+                );
+              });
+        },
+      ),
       floatingActionButton: FloatingActionButton(
           onPressed: _scan,
           child: Icon(FontAwesomeIcons.qrcode)
