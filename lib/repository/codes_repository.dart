@@ -7,33 +7,38 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:lds_otp/models/code_model.dart';
 
-class DBProvider {
-  DBProvider._();
-
-  static final DBProvider db = DBProvider._();
+class CodesRepository {
 
   static Database _database;
 
   Future<Database> get database async {
-    if (_database != null) return _database;
-    // if _database is null we instantiate it
-    _database = await initDB();
-    return _database;
+    if (_database != null) {
+      return _database;
+    } else {
+      // if _database is null we instantiate it
+      _database = await initDB();
+      return _database;
+    }
   }
 
-  initDB() async {
+  Future<Database> initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "codes.db");
-    return await openDatabase(path,
-        version: 1, onOpen: (db) {}, onCreate: _createDatabase);
+
+    return await openDatabase(
+        path,
+        version: 1,
+        onOpen: (db) {},
+        onCreate: _createDatabase
+    );
   }
 
-  addCode(CodeModel code) async {
+  Future<int> addCode(CodeModel code) async {
     final db = await database;
     return await db.insert("Codes", code.toMap());
   }
 
-  deleteCode(String user, String domain) async {
+  Future<int> deleteCode(String user, String domain) async {
     final db = await database;
     return await db.delete(
         "Codes",
@@ -48,7 +53,7 @@ class DBProvider {
     return res.isNotEmpty ? res.map((c) => CodeModel.fromMap(c)).toList() : [];
   }
 
-  _createDatabase(Database db, int version) async {
+  Future _createDatabase(Database db, int version) async {
     var sSQL = StringBuffer();
     sSQL.write(" CREATE TABLE Codes ( ");
     sSQL.write(" user TEXT, ");

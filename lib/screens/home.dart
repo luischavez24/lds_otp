@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lds_otp/screens/scan.dart';
 import 'package:lds_otp/screens/config.dart';
 import 'package:lds_otp/models/screen_model.dart';
+import 'package:lds_otp/bloc/codes_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +14,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeState extends State<HomeScreen> {
   int _currentIndex = 0;
   List<ScreenModel> _appScreens;
+  CodesBloc _codesBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _codesBloc = CodesBloc();
+  }
 
   _HomeState() {
     _appScreens = _createScreens();
@@ -66,10 +75,23 @@ class _HomeState extends State<HomeScreen> {
 
   Widget get _body => _appScreens[_currentIndex].child;
 
+
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: _appBar,
-        body: _body,
+        body: BlocProviderTree(
+          blocProviders: [
+            BlocProvider<CodesBloc>(bloc: _codesBloc)
+          ],
+          child: _body
+        ),
         bottomNavigationBar: _bottomNavigationBar
       );
+
+  @override
+  void dispose() {
+    _codesBloc.dispose();
+    super.dispose();
+  }
 }

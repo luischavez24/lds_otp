@@ -11,10 +11,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:lds_otp/models/code_model.dart';
+import 'package:lds_otp/bloc/codes_bloc.dart';
 import 'package:lds_otp/widgets/code_widget.dart';
 import 'package:lds_otp/utils/messages.dart';
-import 'package:lds_otp/models/code_model.dart';
-import 'package:lds_otp/storage/db_provider.dart';
 
 class ScanScreen extends StatefulWidget {
   @override
@@ -22,49 +22,34 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanState extends State<ScanScreen> {
-  List<CodeWidget> _codeList = [];
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    _chargeCodesFromStorage();
   }
 
   @override
   Widget build(BuildContext context) {
+    final codesProvider = BlocProvider.of<CodesBloc>(context);
+    codesProvider.dispatch(LoadCodes());
     return Scaffold(
-      body: ListView.builder(
-          itemCount: _codeList.length,
-          itemBuilder: (context, index) {
-            final codeItem = _codeList[index];
-            final codeModel = codeItem.codeModel;
-            return Dismissible(
-              key: Key(codeModel.toString()),
-              direction: DismissDirection.endToStart,
-              child: codeItem,
-              secondaryBackground: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  color: Colors.redAccent,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.delete, color: Colors.white),
-                      Text("Eliminando", style: TextStyle(color: Colors.white))
-                    ],
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                  )),
-              background: Container(),
-              confirmDismiss: (direction) async {
-                return await _showConfirmDialog(codeModel);
-              },
-              onDismissed: (direction) async {
-                await _deleteCode(codeModel);
-                showMessage(context, "Codigo eliminado", type: MessageType.SUCCESS);
-              },
-            );
+      body: BlocBuilder(
+          bloc: codesProvider,
+          builder: (context, state) {
+            if (state is CodesLoading) {
+              return Center(
+                child: CircularProgressIndicator(value: null, strokeWidth: 4.5)
+              );
+            } else if(state is CodesLoaded) {
+              return _buildCodeList(codesProvider, state);
+            } else if(state is CodesNotLoaded) {
+              return Center(
+                child: Text("No se pudieron cargar los codigos"),
+              );
+            }
           }),
       floatingActionButton: FloatingActionButton(
-          onPressed: _scan,
+          onPressed: () => _scan(codesProvider),
           child: Icon(FontAwesomeIcons.qrcode)
       )
     );
@@ -85,18 +70,51 @@ class _ScanState extends State<ScanScreen> {
     return isConfirm ?? false;
   }
 
-  Future _chargeCodesFromStorage() async {
-    var codes = await DBProvider.db.getAllCodes();
-    setState(() {
-      _codeList = codes.map((model) => CodeWidget.fromModel(model)).toList();
-    });
+  Widget _buildCodeList(CodesBloc codesProvider, CodesLoaded state) {
+    final codeWidgets = _mapModelToWidget(state.codes);
+    return ListView.builder(
+        itemCount: codeWidgets.length,
+        itemBuilder: (context, index) {
+          final codeWidget = codeWidgets[index];
+          final codeModel = codeWidget.codeModel;
+          return Dismissible(
+            key: Key(codeModel.toString()),
+            direction: DismissDirection.endToStart,
+            child: codeWidget,
+            secondaryBackground: _buildDeleteActionBackground(),
+            background: Container(),
+            confirmDismiss: (direction) => _onConfirmDismiss(codeModel),
+            onDismissed: (direction) => _onDismiss(codesProvider, codeModel),
+          );
+        }
+    );
   }
 
-  Future _scan() async {
+  Widget _buildDeleteActionBackground() => Container(
+    padding: EdgeInsets.symmetric(horizontal: 20.0),
+    color: Colors.redAccent,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        Icon(Icons.delete, color: Colors.white),
+        Text("Eliminando", style: TextStyle(color: Colors.white))
+      ],
+    )
+  );
+
+  List<CodeWidget> _mapModelToWidget(List<CodeModel> models) =>
+      models.map((model) => CodeWidget.fromModel(model)).toList();
+
+  Future _scan(CodesBloc codeProvider) async {
     try {
-      var barcode = await BarcodeScanner.scan();
-      DBProvider.db.addCode(CodeModel.fromBarcode(barcode: barcode));
-      await _chargeCodesFromStorage();
+
+      final codeModel = CodeModel.fromBarcode(
+          barcode: await BarcodeScanner.scan()
+      );
+
+      codeProvider.dispatch(AddCode(codeModel));
+
     } on DatabaseException catch (e) {
       showMessage(context, 'Hubo un problema al acceder a la base de datos ($e).');
     } on PlatformException catch (e) {
@@ -112,8 +130,12 @@ class _ScanState extends State<ScanScreen> {
     }
   }
 
-  Future _deleteCode(CodeModel codeModel) async {
-    await DBProvider.db.deleteCode(codeModel.user, codeModel.domain);
-    _chargeCodesFromStorage();
+  Future _onConfirmDismiss(CodeModel codeModel) async {
+    return await _showConfirmDialog(codeModel);
+  }
+
+  Future _onDismiss(CodesBloc codesProvider, CodeModel codeModel) async {
+    codesProvider.dispatch(DeleteCode(codeModel));
+    showMessage(context, "Codigo eliminado", type: MessageType.SUCCESS);
   }
 }

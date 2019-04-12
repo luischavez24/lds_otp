@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:lds_otp/models/code_model.dart';
-import 'package:lds_otp/storage/db_provider.dart';
+import 'package:lds_otp/repository/codes_repository.dart';
 import 'package:equatable/equatable.dart';
 
 class CodesBloc extends Bloc<CodesEvent, CodesState> {
-  final _repository = DBProvider.db;
+  final _repository = CodesRepository();
 
   @override
   CodesState get initialState => CodesLoading();
@@ -36,6 +36,7 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
       yield* _mapLoadCodesToState();
     }
   }
+
   Stream<CodesState> _mapDeleteCodeToState(CodesState currentState, DeleteCode event) async* {
     if(currentState is CodesLoaded) {
       final CodeModel code = event.code;
@@ -48,8 +49,6 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
 abstract class CodesState extends Equatable {
   CodesState([List props = const []]) : super(props);
 }
-
-
 
 class CodesLoading extends CodesState {
   @override
