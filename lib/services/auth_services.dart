@@ -1,5 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dbcrypt/dbcrypt.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
 enum AuthType {
@@ -22,13 +21,11 @@ abstract class AuthService {
 }
 
 class PinAuthService implements AuthService {
-  final DBCrypt _crypt = DBCrypt();
-
+  final _secureStorage = FlutterSecureStorage();
   @override
   Future<bool> authenticate({ String pin }) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var defaultPin = _crypt.hashpw("1234", DBCrypt().gensalt());
-    return  _crypt.checkpw(pin, prefs.getString("pin") ?? defaultPin);
+    final userPIN = await _secureStorage.read(key: "pin") ?? "1234";
+    return userPIN == pin;
   }
 }
 

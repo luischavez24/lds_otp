@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lds_otp/bloc/preferences_bloc.dart';
 import 'package:lds_otp/screens/scan.dart';
-import 'package:lds_otp/screens/config.dart';
+import 'package:lds_otp/screens/preferences.dart';
 import 'package:lds_otp/models/screen_model.dart';
 import 'package:lds_otp/bloc/codes_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -15,15 +16,14 @@ class _HomeState extends State<HomeScreen> {
   int _currentIndex = 0;
   List<ScreenModel> _appScreens;
   CodesBloc _codesBloc;
+  PreferencesBloc _preferencesBloc;
 
   @override
   void initState() {
     super.initState();
-    _codesBloc = CodesBloc();
-  }
-
-  _HomeState() {
     _appScreens = _createScreens();
+    _codesBloc = CodesBloc();
+    _preferencesBloc = PreferencesBloc();
   }
 
   List<ScreenModel> _createScreens() {
@@ -35,25 +35,23 @@ class _HomeState extends State<HomeScreen> {
       ),
       ScreenModel(
           icon: Icon(Icons.settings),
-          title: "Configuración",
-          child: ConfigScreen()
+          title: "Preferencias",
+          child: PreferencesScreen()
       )
     ];
   }
 
-  BottomNavigationBar get _bottomNavigationBar => BottomNavigationBar(
+  BottomNavigationBar _buildNavigationBar() => BottomNavigationBar(
         currentIndex: _currentIndex,
         items: (_appScreens ?? [])
             .map((screen) => screen.bottomNavigationButton)
             .toList(),
         onTap: (screenIndex) {
-          setState(() {
-            _currentIndex = screenIndex;
-          });
+          setState(() { _currentIndex = screenIndex; });
         }
       );
 
-  AppBar get _appBar => AppBar(
+  AppBar _buildAppBar() => AppBar(
         leading: _appScreens[_currentIndex].icon,
         title: Text(
           _appScreens[_currentIndex].title,
@@ -69,29 +67,29 @@ class _HomeState extends State<HomeScreen> {
         ],
       );
 
+  Widget _buildBody() => _appScreens[_currentIndex].child;
+
   Future _logoff () async {
     await Navigator.of(context).pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
   }
 
-  Widget get _body => _appScreens[_currentIndex].child;
-
-
-
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: _appBar,
+        appBar: _buildAppBar(),
         body: BlocProviderTree(
           blocProviders: [
-            BlocProvider<CodesBloc>(bloc: _codesBloc)
+            BlocProvider<CodesBloc>(bloc: _codesBloc),
+            BlocProvider<PreferencesBloc>(bloc: _preferencesBloc)
           ],
-          child: _body
+          child: _buildBody()
         ),
-        bottomNavigationBar: _bottomNavigationBar
+        bottomNavigationBar: _buildNavigationBar()
       );
 
   @override
   void dispose() {
     _codesBloc.dispose();
+    _preferencesBloc.dispose();
     super.dispose();
   }
 }

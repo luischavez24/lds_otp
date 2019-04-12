@@ -14,9 +14,9 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
       if (event is LoadCodes) {
         yield* _mapLoadCodesToState();
       } else if(event is AddCode) {
-        yield* _mapAddCodeToState(currentState, event);
+        yield* _mapAddCodeToState(event);
       } else if(event is DeleteCode){
-        yield* _mapDeleteCodeToState(currentState, event);
+        yield* _mapDeleteCodeToState(event);
       }
   }
 
@@ -29,19 +29,21 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
     }
   }
 
-  Stream<CodesState> _mapAddCodeToState(CodesState currentState, AddCode event) async*{
+  Stream<CodesState> _mapAddCodeToState(AddCode event) async*{
     if(currentState is CodesLoaded) {
       final CodeModel newCode = event.code;
       await _repository.addCode(newCode);
-      yield* _mapLoadCodesToState();
+      // yield* _mapLoadCodesToState();
+      yield CodesLoading();
     }
   }
 
-  Stream<CodesState> _mapDeleteCodeToState(CodesState currentState, DeleteCode event) async* {
+  Stream<CodesState> _mapDeleteCodeToState(DeleteCode event) async* {
     if(currentState is CodesLoaded) {
       final CodeModel code = event.code;
       await _repository.deleteCode(code.user, code.domain);
-      yield* _mapLoadCodesToState();
+      // yield* _mapLoadCodesToState();
+      yield CodesLoading();
     }
   }
 }
