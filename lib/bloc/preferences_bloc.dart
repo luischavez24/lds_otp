@@ -33,7 +33,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState>{
   }
 }
 
-class PreferencesState extends Equatable {
+abstract class PreferencesState extends Equatable {
   PreferencesState([List props = const []]) : super(props);
 }
 
@@ -46,7 +46,7 @@ class PreferencesLoaded extends PreferencesState {
 
 class PreferencesNotLoaded extends PreferencesState { }
 
-class PreferencesEvent extends Equatable {
+abstract class PreferencesEvent extends Equatable {
   PreferencesEvent([List props = const []]) : super(props);
 }
 

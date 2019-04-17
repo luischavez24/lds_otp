@@ -34,7 +34,7 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
       final CodeModel newCode = event.code;
       await _repository.addCode(newCode);
       // yield* _mapLoadCodesToState();
-      yield CodesLoading();
+      yield* _mapLoadCodesToState();
     }
   }
 
@@ -42,8 +42,7 @@ class CodesBloc extends Bloc<CodesEvent, CodesState> {
     if(currentState is CodesLoaded) {
       final CodeModel code = event.code;
       await _repository.deleteCode(code.user, code.domain);
-      // yield* _mapLoadCodesToState();
-      yield CodesLoading();
+      yield* _mapLoadCodesToState();
     }
   }
 }

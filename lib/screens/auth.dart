@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lds_otp/bloc/auth_bloc.dart';
 
 import 'package:local_auth/local_auth.dart';
 
@@ -9,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:lds_otp/utils/messages.dart';
 import 'package:lds_otp/utils/theme.dart';
+import 'package:lds_otp/utils/validation.dart';
 import 'package:lds_otp/services/auth_services.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -34,8 +37,7 @@ class _AuthState extends State<AuthScreen> {
     return Theme(
       data: buildDarkTheme(),
       child: Scaffold(
-        body: Builder(builder: (context) =>
-            SafeArea(
+        body: Builder(builder: (context) => SafeArea(
             child: Form(
               key: _formKey,
               child: ListView(
@@ -54,7 +56,7 @@ class _AuthState extends State<AuthScreen> {
                         filled: true
                     ),
                     obscureText: true,
-                    validator: _validatePINField,
+                    validator: validatePINField,
                     onSaved: (value) { _data = value; },
                   ),
                   SizedBox(height: 60.0),
@@ -85,38 +87,45 @@ class _AuthState extends State<AuthScreen> {
       )
     );
   }
-
-  String _validatePINField (value) {
-    if(value.length > 4) {
-      return "El PIN debe ser de 4 dígitos";
-    }
-    return null;
-  }
   
   Future _pinAuth(BuildContext context) async {
+    final AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
     _formKey.currentState.save();
     if(_formKey.currentState.validate()) {
-      final authService = AuthService.getServiceByAuthType(AuthType.PIN);
-      _postAuthenticationAction(context, await authService.authenticate(pin: _data));
+      // final authService = AuthService.getServiceByAuthType(AuthType.PIN);
+      // _postAuthenticationAction(context, await authService.authenticate(pin: _data));
+      authBloc.dispatch(CheckCredentials(AuthType.PIN, _data));
+      _postAuthenticationAction(context, authBloc.currentState);
     }
   }
 
-  Future _biometricAuth(BuildContext context,) async {
-    final authService = AuthService.getServiceByAuthType(AuthType.BIOMETRIC);
+  Future _biometricAuth(BuildContext context) async {
+    // final authService = AuthService.getServiceByAuthType(AuthType.BIOMETRIC);
+    final AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
     try {
-      var isAuthenticated = await authService.authenticate();
+      // var isAuthenticated = await authService.authenticate();
+      authBloc.dispatch(CheckCredentials(AuthType.BIOMETRIC));
       if(!mounted) return;
-      _postAuthenticationAction(context, isAuthenticated);
+      _postAuthenticationAction(context, authBloc.currentState);
+      // _postAuthenticationAction(context, isAuthenticated);
     } on PlatformException catch (e) {
       showMessage(context, e.message);
     }
   }
 
-  void _postAuthenticationAction(BuildContext context, bool isAuthenticated) {
+  /*void _postAuthenticationAction(BuildContext context, bool isAuthenticated) {
     if(isAuthenticated) {
       Navigator.pushReplacementNamed (context, '/');
     } else {
       showMessage(context, "No se pudo realizar la autenticación, intentelo nuevamente");
+    }
+  }*/
+
+  void _postAuthenticationAction(BuildContext context, AuthState currentState) {
+    if (currentState is AuthSuccessful) {
+      Navigator.pushReplacementNamed(context, '/');
+    } else if (currentState is AuthFailed) {
+      showMessage(context,"No se pudo realizar la autenticación, intentelo nuevamente");
     }
   }
 

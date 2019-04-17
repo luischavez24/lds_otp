@@ -13,7 +13,7 @@ class SecretsRepository {
   }
 
   Future changePin(String oldValue, String newValue) async {
-    if(oldValue == newValue) {
+    if(oldValue != newValue) {
       var isAuthenticated = await verifyPin(oldValue);
       if(isAuthenticated) {
         await saveSecret("pin", newValue);
@@ -25,5 +25,8 @@ class SecretsRepository {
     }
   }
 
-  Future<bool> verifyPin(String pin) async => (pin == await getSecret("pin"));
+  Future<bool> verifyPin(String pin) async {
+    var savedPin = await getSecret("pin") ?? "1234";
+    return pin == savedPin;
+  }
 }

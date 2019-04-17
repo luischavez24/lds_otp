@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lds_otp/bloc/preferences_bloc.dart';
+import 'package:lds_otp/bloc/bloc.dart';
 import 'package:lds_otp/screens/scan.dart';
 import 'package:lds_otp/screens/preferences.dart';
 import 'package:lds_otp/models/screen_model.dart';
-import 'package:lds_otp/bloc/codes_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,13 +16,33 @@ class _HomeState extends State<HomeScreen> {
   List<ScreenModel> _appScreens;
   CodesBloc _codesBloc;
   PreferencesBloc _preferencesBloc;
+  ChangePinBloc _changePinBloc;
+  AuthBloc _authBloc;
 
   @override
   void initState() {
     super.initState();
     _appScreens = _createScreens();
+    _createBlocs();
+    _chargeCodes();
+  }
+
+  void _createBlocs() {
     _codesBloc = CodesBloc();
     _preferencesBloc = PreferencesBloc();
+    _changePinBloc = ChangePinBloc();
+    _authBloc = AuthBloc();
+  }
+
+  void _disposeBlocs(){
+    _codesBloc?.dispose();
+    _preferencesBloc?.dispose();
+    _changePinBloc?.dispose();
+    _authBloc?.dispose();
+  }
+
+  void _chargeCodes() {
+    _codesBloc.dispatch(LoadCodes());
   }
 
   List<ScreenModel> _createScreens() {
@@ -51,7 +70,7 @@ class _HomeState extends State<HomeScreen> {
         }
       );
 
-  AppBar _buildAppBar() => AppBar(
+  AppBar _buildAppBar(BuildContext context) => AppBar(
         leading: _appScreens[_currentIndex].icon,
         title: Text(
           _appScreens[_currentIndex].title,
@@ -61,7 +80,7 @@ class _HomeState extends State<HomeScreen> {
         ),
         actions: <Widget>[
           IconButton(
-              onPressed: _logoff ,
+              onPressed: () => _logoff(context) ,
               icon: Icon(FontAwesomeIcons.signOutAlt)
           )
         ],
@@ -69,27 +88,31 @@ class _HomeState extends State<HomeScreen> {
 
   Widget _buildBody() => _appScreens[_currentIndex].child;
 
-  Future _logoff () async {
+  Future _logoff (BuildContext context) async {
+    final AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
+    authBloc.dispatch(Logout());
     await Navigator.of(context).pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: _buildAppBar(),
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: _buildAppBar(context),
         body: BlocProviderTree(
-          blocProviders: [
-            BlocProvider<CodesBloc>(bloc: _codesBloc),
-            BlocProvider<PreferencesBloc>(bloc: _preferencesBloc)
-          ],
-          child: _buildBody()
+            blocProviders: [
+              BlocProvider<CodesBloc>(bloc: _codesBloc),
+              BlocProvider<PreferencesBloc>(bloc: _preferencesBloc),
+              BlocProvider<ChangePinBloc>(bloc: _changePinBloc),
+            ],
+            child: _buildBody(),
         ),
-        bottomNavigationBar: _buildNavigationBar()
-      );
+        bottomNavigationBar: _buildNavigationBar(),
+    );
+  }
 
   @override
   void dispose() {
-    _codesBloc.dispose();
-    _preferencesBloc.dispose();
+    _disposeBlocs();
     super.dispose();
   }
 }

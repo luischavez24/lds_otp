@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lds_otp/bloc/change_pin_bloc.dart';
 import 'package:lds_otp/bloc/preferences_bloc.dart';
 import 'package:lds_otp/models/preferences_model.dart';
+import 'package:lds_otp/screens/change_pin.dart';
 import 'package:lds_otp/utils/theme.dart';
 
 class PreferencesScreen extends StatefulWidget {
@@ -12,11 +14,13 @@ class _PreferencesState extends State<PreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final preferencesProvider = BlocProvider.of<PreferencesBloc>(context);
-    preferencesProvider.dispatch(LoadPreferences());
+    final preferencesBloc = BlocProvider.of<PreferencesBloc>(context);
+    final changePinBloc = BlocProvider.of<ChangePinBloc>(context);
+
+    preferencesBloc.dispatch(LoadPreferences());
     return BlocBuilder(
-      bloc: preferencesProvider,
-      builder: (context, state) {
+      bloc: preferencesBloc,
+      builder: (ctx, state) {
         if (state is PreferencesLoading) {
           return Center(
               child: CircularProgressIndicator(value: null, strokeWidth: 4.5)
@@ -31,13 +35,13 @@ class _PreferencesState extends State<PreferencesScreen> {
                 children: <Widget>[
                   ListTile(
                     title: Text("Cambiar PIN de acceso"),
-                    onTap: _savePin,
+                    onTap: () => _savePin(context, changePinBloc),
                   ),
                   SwitchListTile(
                     title: Text("¿Usar huella dactilar?"),
                     value: _getValueInLoadedPreferences(state, "uses_fingerprint"),
                     onChanged: (isUsingFingerprint) => _changeFingerprintUserPref(
-                        preferencesProvider,
+                        preferencesBloc,
                         isUsingFingerprint
                     ),
                     activeColor: AppColors.accentColor,
@@ -62,5 +66,10 @@ class _PreferencesState extends State<PreferencesScreen> {
       preferencesBloc.dispatch(SavePreference(preference));
   }
 
-  Future _savePin() async {}
+  Future _savePin(BuildContext context, ChangePinBloc changePinBloc) async {
+    changePinBloc.dispatch(StartPinChange());
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => ChangePinScreen(changePinBloc: changePinBloc,)
+    ));
+  }
 }

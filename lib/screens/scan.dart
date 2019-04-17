@@ -30,18 +30,17 @@ class _ScanState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final codesProvider = BlocProvider.of<CodesBloc>(context);
-    codesProvider.dispatch(LoadCodes());
+    final _codeBloc = BlocProvider.of<CodesBloc>(context);
     return Scaffold(
       body: BlocBuilder(
-          bloc: codesProvider,
+          bloc: _codeBloc,
           builder: (context, state) {
             if (state is CodesLoading) {
               return Center(
                 child: CircularProgressIndicator(value: null, strokeWidth: 4.5)
               );
             } else if(state is CodesLoaded) {
-              return _buildCodeList(codesProvider, state);
+              return _buildCodeList(_codeBloc, state);
             } else if(state is CodesNotLoaded) {
               return Center(
                 child: Text("No se pudieron cargar los codigos"),
@@ -49,7 +48,7 @@ class _ScanState extends State<ScanScreen> {
             }
           }),
       floatingActionButton: FloatingActionButton(
-          onPressed: () => _scan(codesProvider),
+          onPressed: () => _scan(_codeBloc),
           child: Icon(FontAwesomeIcons.qrcode)
       )
     );
@@ -83,8 +82,8 @@ class _ScanState extends State<ScanScreen> {
             child: codeWidget,
             secondaryBackground: _buildDeleteActionBackground(),
             background: Container(),
-            confirmDismiss: (direction) => _onConfirmDismiss(codeModel),
-            onDismissed: (direction) => _onDismiss(codesProvider, codeModel),
+            confirmDismiss: (direction) async => await _onConfirmDismiss(codeModel),
+            onDismissed: (direction) => _onDismiss(codesProvider, codeModel)
           );
         }
     );
@@ -112,9 +111,9 @@ class _ScanState extends State<ScanScreen> {
       final codeModel = CodeModel.fromBarcode(
           barcode: await BarcodeScanner.scan()
       );
-
-      codeProvider.dispatch(AddCode(codeModel));
-
+      setState(() {
+        codeProvider.dispatch(AddCode(codeModel));
+      });
     } on DatabaseException catch (e) {
       showMessage(context, 'Hubo un problema al acceder a la base de datos ($e).');
     } on PlatformException catch (e) {

@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:lds_otp/repository/secrets_repository.dart';
 import 'package:lds_otp/utils/exception.dart';
+
 class ChangePinBloc extends Bloc<ChangePinEvent, ChangePinState>{
 
   final _secretsRepository = SecretsRepository();
@@ -13,11 +14,13 @@ class ChangePinBloc extends Bloc<ChangePinEvent, ChangePinState>{
   Stream<ChangePinState> mapEventToState(ChangePinEvent event) async* {
     if(event is ChangePin) {
         yield* _mapChangePinToState(event);
+    } else if(event is StartPinChange) {
+        yield ChangePinStarted();
     }
   }
 
   Stream<ChangePinState> _mapChangePinToState(ChangePin event) async* {
-    if(currentState is ChangePinStarted) {
+    if(!(currentState is ChangePinFinished)) {
       try {
         await _secretsRepository.changePin(event.oldPin, event.newPin);
         yield ChangePinFinished();
@@ -30,13 +33,11 @@ class ChangePinBloc extends Bloc<ChangePinEvent, ChangePinState>{
   }
 }
 
-class ChangePinState extends Equatable {
+abstract class ChangePinState extends Equatable {
   ChangePinState([List props = const []]) : super(props);
 }
 
 class ChangePinStarted extends ChangePinState { }
-
-class PinVerified extends ChangePinState {}
 
 class PinEqual extends ChangePinState { }
 
@@ -44,10 +45,11 @@ class PinWrong extends ChangePinState { }
 
 class ChangePinFinished extends ChangePinState { }
 
-class ChangePinEvent extends Equatable {
+abstract class ChangePinEvent extends Equatable {
   ChangePinEvent([List props = const []]) : super(props);
 }
 
+class StartPinChange extends ChangePinEvent {}
 class ChangePin extends ChangePinEvent {
   final oldPin;
   final newPin;
