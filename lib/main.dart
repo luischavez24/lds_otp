@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lds_otp/screens/change_pin.dart';
-import 'package:lds_otp/screens/home.dart';
 import 'package:lds_otp/screens/auth.dart';
 import 'package:lds_otp/utils/theme.dart';
 import 'package:lds_otp/bloc/bloc.dart';
@@ -23,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _authBloc = AuthBloc();
+    _authBloc.dispatch(CheckBiometrics());
   }
 
   @override
@@ -33,11 +32,7 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp(
           title: 'Autenticador LDS',
-          initialRoute: '/auth',
-          routes: {
-            '/': (context) => HomeScreen(),
-            '/auth': (context) => AuthScreen()
-          },
+          home: AuthScreen(),
           theme: buildLightTheme()
       ),
     );

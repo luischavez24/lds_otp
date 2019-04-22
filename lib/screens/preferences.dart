@@ -17,7 +17,6 @@ class _PreferencesState extends State<PreferencesScreen> {
     final preferencesBloc = BlocProvider.of<PreferencesBloc>(context);
     final changePinBloc = BlocProvider.of<ChangePinBloc>(context);
 
-    preferencesBloc.dispatch(LoadPreferences());
     return BlocBuilder(
       bloc: preferencesBloc,
       builder: (ctx, state) {
@@ -39,7 +38,7 @@ class _PreferencesState extends State<PreferencesScreen> {
                   ),
                   SwitchListTile(
                     title: Text("¿Usar huella dactilar?"),
-                    value: _getValueInLoadedPreferences(state, "uses_fingerprint"),
+                    value: _getValueInLoadedPreferences(state, "uses_fingerprint") ?? false,
                     onChanged: (isUsingFingerprint) => _changeFingerprintUserPref(
                         preferencesBloc,
                         isUsingFingerprint
@@ -55,7 +54,12 @@ class _PreferencesState extends State<PreferencesScreen> {
   }
 
   dynamic _getValueInLoadedPreferences(PreferencesLoaded state, String key) {
-    return state.preferences.where((pref) => pref.key == key).first.value;
+    var filterPreferences = state.preferences.where((pref) => pref.key == key);
+    if(filterPreferences.isNotEmpty) {
+      return filterPreferences.first.value;
+    } else {
+      return null;
+    }
   }
 
   void _changeFingerprintUserPref(PreferencesBloc preferencesBloc, bool isUsingFingerprint) {

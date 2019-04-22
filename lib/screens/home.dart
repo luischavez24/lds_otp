@@ -24,7 +24,7 @@ class _HomeState extends State<HomeScreen> {
     super.initState();
     _appScreens = _createScreens();
     _createBlocs();
-    _chargeCodes();
+    _chargeBlocs();
   }
 
   void _createBlocs() {
@@ -41,8 +41,9 @@ class _HomeState extends State<HomeScreen> {
     _authBloc?.dispose();
   }
 
-  void _chargeCodes() {
+  void _chargeBlocs() {
     _codesBloc.dispatch(LoadCodes());
+    _preferencesBloc.dispatch(LoadPreferences());
   }
 
   List<ScreenModel> _createScreens() {
@@ -91,7 +92,6 @@ class _HomeState extends State<HomeScreen> {
   Future _logoff (BuildContext context) async {
     final AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
     authBloc.dispatch(Logout());
-    await Navigator.of(context).pushNamedAndRemoveUntil('/auth', (Route<dynamic> route) => false);
   }
 
   @override
