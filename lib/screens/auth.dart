@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lds_otp/bloc/auth_bloc.dart';
+import 'package:lds_otp/models/biometric_config.dart';
 import 'package:lds_otp/models/preferences_model.dart';
 import 'package:lds_otp/utils/messages.dart';
 import 'package:lds_otp/utils/theme.dart';
@@ -95,7 +96,7 @@ class _AuthState extends State<AuthScreen> {
                           color: AppColors.accentColor,
                           textColor: AppColors.textColor,
                           icon: Icon(Icons.lock),
-                          label: Text("ACCEDER"),
+                          label: Text("Acceder"),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0)
                           ),

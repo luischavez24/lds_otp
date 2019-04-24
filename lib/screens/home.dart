@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeState extends State<HomeScreen> {
   int _currentIndex = 0;
   List<ScreenModel> _appScreens;
+
   CodesBloc _codesBloc;
   PreferencesBloc _preferencesBloc;
   ChangePinBloc _changePinBloc;

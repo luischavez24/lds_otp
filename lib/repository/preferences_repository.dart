@@ -10,6 +10,7 @@ class PreferencesRepository {
         .toList();
 
   }
+
   Future savePreference<T>(PreferenceModel<T> preference) async {
     final sharedPreferences = await SharedPreferences.getInstance();
     final key = preference.key;

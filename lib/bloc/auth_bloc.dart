@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:bloc/bloc.dart';
-import 'package:lds_otp/models/preferences_model.dart';
+import 'package:lds_otp/models/biometric_config.dart';
 import 'package:lds_otp/services/auth_services.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState>{

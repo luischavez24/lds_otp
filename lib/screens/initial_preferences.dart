@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lds_otp/bloc/change_pin_bloc.dart';
+import 'package:lds_otp/bloc/bloc.dart';
 import 'package:lds_otp/utils/theme.dart';
 import 'package:lds_otp/utils/validation.dart';
 import 'package:lds_otp/utils/messages.dart';
 
-class ChangePinScreen extends StatefulWidget {
-  final ChangePinBloc changePinBloc;
+class InitialPreferencesScreen extends StatefulWidget {
+  final InitialPreferencesBloc initialPreferencesBloc;
 
-  ChangePinScreen({this.changePinBloc});
+  InitialPreferencesScreen({ this.initialPreferencesBloc });
 
   @override
-  State<StatefulWidget> createState() => _ChangePinState(changePinBloc);
+  State<StatefulWidget> createState() => _InitialPreferencesState(initialPreferencesBloc);
 }
 
-class _ChangePinState extends State<ChangePinScreen> {
-  final ChangePinBloc changePinBloc;
+class _InitialPreferencesState extends State<InitialPreferencesScreen> {
+  final InitialPreferencesBloc initialPreferencesBloc;
   final _formKey = GlobalKey<FormState>();
-  String _currentPin = "";
-  String _newPin = "";
 
-  _ChangePinState(this.changePinBloc);
+  String _newPin = "";
+  String _confirmPin = "";
+
+  _InitialPreferencesState(this.initialPreferencesBloc);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Cambiar PIN"),
-      ),
-      body: BlocBuilder(
-          bloc: changePinBloc,
-          builder: _screenBuilder
-      )
+        appBar: AppBar(
+          title: Text("Configuración de preferencias"),
+        ),
+        body: BlocBuilder(
+            bloc: initialPreferencesBloc,
+            builder: _screenBuilder
+        )
     );
   }
 
-  Widget _screenBuilder(BuildContext context, ChangePinState state) {
+  Widget _screenBuilder(BuildContext context, InitialPreferencesState state) {
     Widget childWidget;
     if(state is ChangePinFinished) {
       childWidget = _buildChangePinFinished(context);
@@ -45,7 +46,7 @@ class _ChangePinState extends State<ChangePinScreen> {
     return SafeArea(child: childWidget ?? Container());
   }
 
-  Widget _buildChangePinForm(BuildContext context, ChangePinState state) {
+  Widget _buildChangePinForm(BuildContext context, InitialPreferencesState state) {
     return Form(
       key: _formKey,
       child: ListView(
@@ -53,17 +54,17 @@ class _ChangePinState extends State<ChangePinScreen> {
         children: <Widget>[
           SizedBox(height: 60.0),
           TextFormField(
-            keyboardType: TextInputType.numberWithOptions(
-                signed: false,
-                decimal: false
-            ),
-            decoration: InputDecoration(
-                labelText: "PIN Actual",
-                filled: true
-            ),
-            obscureText: true,
-            validator: validatePINField,
-            onSaved: (value) => _currentPin = value
+              keyboardType: TextInputType.numberWithOptions(
+                  signed: false,
+                  decimal: false
+              ),
+              decoration: InputDecoration(
+                  labelText: "Nuevo PIN",
+                  filled: true
+              ),
+              obscureText: true,
+              validator: validatePINField,
+              onSaved: (value) => _newPin = value
           ),
           SizedBox(height: 60.0),
           TextFormField(
@@ -72,34 +73,32 @@ class _ChangePinState extends State<ChangePinScreen> {
                 decimal: false
             ),
             decoration: InputDecoration(
-                labelText: "Nuevo PIN",
+                labelText: "Confirmar PIN",
                 filled: true
             ),
             obscureText: true,
             validator: validatePINField,
-            onSaved: (value) => _newPin = value,
+            onSaved: (value) => _confirmPin = value,
           ),
-          SizedBox(height: 60.0),
+          SizedBox(height: 40.0),
+          SwitchListTile(
+            value: false,
+            title: Text("¿Usar huella dactilar?"),
+            activeColor: AppColors.accentColor,
+          ),
+          SizedBox(height: 80.0),
           ButtonBar(
             children: <Widget>[
               RaisedButton.icon(
                 color: AppColors.accentColor,
                 textColor: AppColors.textColor,
-                icon: Icon(Icons.lock),
-                label: Text("Cambiar"),
+                icon: Icon(Icons.save),
+                label: Text("Guardar"),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0)
                 ),
                 onPressed: () {
-                  _formKey.currentState.save();
-                  if(_formKey.currentState.validate()) {
-                    changePinBloc.dispatch(ChangePin(_currentPin, _newPin));
-                    if (state is PinEqual) {
-                      showMessage(context, "Los PINs son iguales");
-                    } else if (state is PinWrong) {
-                      showMessage(context, "El PIN ingresado no es correcto");
-                    }
-                  }
+
                 },
               )
             ],
