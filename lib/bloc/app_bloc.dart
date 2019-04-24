@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:lds_otp/repository/preferences_repository.dart';
-import 'package:lds_otp/repository/secrets_repository.dart';
+import 'package:lds_otp/services/preference_service.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
+  final preferencesService = PreferencesService();
 
   @override
   AppState get initialState => AppStarted();
@@ -16,21 +16,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   Stream<AppState> _mapCheckAppUseToState(CheckAppUse event) async* {
-
     yield AppLoading();
-
-    // TODO: Wrap this logic in a service
-    final secretsRepository = SecretsRepository();
-
-    final preferencesRepository = PreferencesRepository();
-
-    final hasPin = (await secretsRepository.getSecret("pin")) != null;
-
-    final usesFingerprint = (
-        await preferencesRepository.getPreference("uses_fingerprint")) != null;
-
-    yield hasPin && usesFingerprint ? AppNormalUse() : AppFirstUse();
-
+    if(await preferencesService.isAppFirstUse()) {
+      yield AppFirstUse();
+    } else {
+      yield AppNormalUse();
+    }
   }
 }
 

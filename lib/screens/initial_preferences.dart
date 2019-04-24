@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lds_otp/bloc/bloc.dart';
 import 'package:lds_otp/utils/theme.dart';
 import 'package:lds_otp/utils/validation.dart';
-import 'package:lds_otp/utils/messages.dart';
 
 class InitialPreferencesScreen extends StatefulWidget {
   final InitialPreferencesBloc initialPreferencesBloc;
@@ -20,14 +19,14 @@ class _InitialPreferencesState extends State<InitialPreferencesScreen> {
 
   String _newPin = "";
   String _confirmPin = "";
-
+  bool _usesFingerprint = false;
   _InitialPreferencesState(this.initialPreferencesBloc);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Configuración de preferencias"),
+          title: Text("Configuración inicial"),
         ),
         body: BlocBuilder(
             bloc: initialPreferencesBloc,
@@ -82,9 +81,14 @@ class _InitialPreferencesState extends State<InitialPreferencesScreen> {
           ),
           SizedBox(height: 40.0),
           SwitchListTile(
-            value: false,
+            value: _usesFingerprint,
             title: Text("¿Usar huella dactilar?"),
             activeColor: AppColors.accentColor,
+            onChanged: (value) {
+              setState(() {
+                _usesFingerprint = value;
+              });
+            },
           ),
           SizedBox(height: 80.0),
           ButtonBar(
